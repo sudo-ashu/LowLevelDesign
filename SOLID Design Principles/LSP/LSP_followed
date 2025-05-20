@@ -2,20 +2,22 @@
 using namespace std;
 
 
-
 // Liskov Substitution Principle (LSP) is followed 
 
 
-class Account {
+class DepositOnlyAccount {
 public:
     virtual void deposit(int ammount) = 0;
+};
+
+class WithdrawableAccount : public DepositOnlyAccount {
+public:
     virtual void withdraw(int ammount) = 0; 
 };
 
 
 
-
-class SavingsAccount : public Account {
+class SavingsAccount : public WithdrawableAccount {
 private:
     int balance;
 public:
@@ -40,7 +42,7 @@ public:
     }
 };
 
-class CurrentAccount : public Account {
+class CurrentAccount : public WithdrawableAccount {
 private: 
     int balance;
 public:
@@ -65,7 +67,7 @@ public:
     }
 };
 
-class FixedTermAccount : public Account {
+class FixedTermAccount : public DepositOnlyAccount {
 private:
     int balance;
 public:
@@ -78,47 +80,43 @@ public:
         cout << balance << " $ deposited to Fixed-Term account ";
         cout << "Total balance: " << balance << endl;
     }
-
-    void withdraw(int withdraw) override {
-        throw logic_error("Cannot withdraw from Fixed-Term account");
-    }
 };
 
 
 class Client {
 private:
-    vector<Account*> accounts;
+    vector<DepositOnlyAccount*> depositAccounts;
+    vector<WithdrawableAccount*> withdrawAccounts;
 
 public:   
-    Client (vector<Account*> accounts) {
-        this -> accounts = accounts;
+    Client ( vector<WithdrawableAccount*> withdrawAccounts, vector<DepositOnlyAccount*> depositAccounts) {
+        this -> withdrawAccounts = withdrawAccounts;
+        this -> depositAccounts = depositAccounts;
 
     }
 
     void transactionProcessor() {
-        for (Account* account: accounts) {
+        for (WithdrawableAccount* account: withdrawAccounts) {
             account -> deposit(1000);
-            
-            //assuming all accounts have the same withdraw amount
-            
-            try {
-                account -> withdraw(500);
-            } catch (logic_error& e) {
-                cout << e.what() << endl;
-            }
+            account -> withdraw(500);
         }
+
+        for (DepositOnlyAccount* account: depositAccounts)
+            account -> deposit(7000);
     }
 };
 
 
 int main() {
-    vector<Account*> accounts;
-    accounts.push_back(new SavingsAccount());
-    accounts.push_back(new CurrentAccount());
-    accounts.push_back(new FixedTermAccount());
+    vector<WithdrawableAccount*> withdrawableAccounts;
+    withdrawableAccounts.push_back(new SavingsAccount());
+    withdrawableAccounts.push_back(new CurrentAccount());
     
+    // withdrawableAccounts.push_back(new FixedTermAccount());
+    vector<DepositOnlyAccount*> depositOnlyAccounts;
+    depositOnlyAccounts.push_back(new FixedTermAccount());
     
-    Client* client = new Client(accounts);
+    Client* client = new Client(withdrawableAccounts, depositOnlyAccounts);
     client -> transactionProcessor();
     
 
