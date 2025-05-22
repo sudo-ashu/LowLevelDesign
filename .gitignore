@@ -1,0 +1,17 @@
+#editor files
+
+# Visual Studio Code
+.vscode/
+# JetBrains IDEs
+.idea/
+# Eclipse
+.classpath
+.project
+
+#executables
+# Windows
+*.exe
+# Linux
+*.out
+# Mac
+*.app
